@@ -58,6 +58,7 @@ pipeline {
                 sh "docker stop ponari-frontend || true"
                 sh "docker rm ponari-frontend || true"
                 sh "docker run -d --name ponari-frontend -p 80:3000 ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                sh "sleep 10"
             }
         }
 
