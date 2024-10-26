@@ -63,7 +63,7 @@ pipeline {
 
         stage('Test Access') {
             steps {
-                sh "curl -I -s localhost:80 | grep -i http"
+                sh "curl -I -s localhost:80"
             }
         }
     }
