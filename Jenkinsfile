@@ -1,7 +1,8 @@
 pipeline {
-    agent any
-    tools {
-        nodejs "NodeJS 22.10.0"  
+    agent {
+        docker {
+            image 'node:22.10.0-alpine3.20'  
+        }
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('746a9d6f-7d6b-48fe-8d3c-9c03c59d8149')
