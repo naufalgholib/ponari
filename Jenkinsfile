@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    tools {
+        nodejs "NodeJS 22.10.0"  
+    }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('746a9d6f-7d6b-48fe-8d3c-9c03c59d8149')
         GITHUB_CREDENTIALS = credentials('5eb92f59-8b32-482c-a9b9-d5676b693029')
