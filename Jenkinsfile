@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        GITHUB_CREDENTIALS = credentials('github-credentials')
-        DOCKER_IMAGE = "your-dockerhub-username/your-image-name"
+        DOCKERHUB_CREDENTIALS = credentials('746a9d6f-7d6b-48fe-8d3c-9c03c59d8149')
+        GITHUB_CREDENTIALS = credentials('5eb92f59-8b32-482c-a9b9-d5676b693029')
+        DOCKER_IMAGE = "naufalgholib/ponari-fe"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'github-credentials', url: 'https://github.com/your-username/your-repo.git'
+                git branch: 'main', credentialsId: '5eb92f59-8b32-482c-a9b9-d5676b693029', url: 'https://github.com/naufalgholib/ponari.git'
             }
         }
 
@@ -43,7 +43,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                    docker.withRegistry('https://index.docker.io/v1/', '746a9d6f-7d6b-48fe-8d3c-9c03c59d8149') {
                         docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}").push()
                         docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}").push("latest")
                     }
@@ -53,15 +53,15 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh "docker stop my-app-container || true"
-                sh "docker rm my-app-container || true"
-                sh "docker run -d --name my-app-container -p 3000:3000 ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                sh "docker stop ponari-frontend || true"
+                sh "docker rm ponari-frontend || true"
+                sh "docker run -d --name ponari-frontend -p 80:3000 ${DOCKER_IMAGE}:${BUILD_NUMBER}"
             }
         }
 
         stage('Test Access') {
             steps {
-                sh "curl -I http://localhost:3000"
+                sh "curl -I -s localhost:80 | grep -i http"
             }
         }
     }
