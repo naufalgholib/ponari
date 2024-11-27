@@ -1,60 +1,80 @@
+// InputPrescription.tsx
 import React, { FC } from "react";
-import type { inputType } from "./PrescriptionForm";
+import { PrescriptionInput } from "./PrescriptionForm";
 
 type InputPrescriptionProps = {
-  id: number;
-  beforeMeals: string;
-  afterMeals: string;
-  onCountInput: React.Dispatch<React.SetStateAction<inputType[]>>;
+  prescription: PrescriptionInput;
+  errors: { [key: string]: string };
+  onUpdate: (field: string, value: string) => void;
+  onRemove: () => void;
 };
 
 const InputPrescription: FC<InputPrescriptionProps> = ({
-  id,
-  beforeMeals,
-  afterMeals,
-  onCountInput,
+  prescription,
+  errors,
+  onUpdate,
+  onRemove,
 }) => {
   return (
     <section className="mb-4">
       <div className="flex justify-between gap-2 items-center">
         <div>
-          <label htmlFor="" className="text-[12px] text-[#00000099]">
+          <label htmlFor={`medicine-${prescription.id}`} className="text-[12px] text-[#00000099]">
             Medicine
           </label>
           <input
+            id={`medicine-${prescription.id}`}
             type="text"
-            className="border-b border-[#0000006B] w-[220px] focus:outline-none"
+            value={prescription.medicine}
+            onChange={(e) => onUpdate("medicine", e.target.value)}
+            className={`border-b ${
+              errors.medicine ? "border-red-500" : "border-[#0000006B]"
+            } w-[220px] focus:outline-none`}
           />
+          {errors.medicine && (
+            <p className="text-red-500 text-xs mt-1">{errors.medicine}</p>
+          )}
         </div>
 
         <div className="relative">
-          <label htmlFor="" className="text-[12px] text-[#00000099]">
+          <label htmlFor={`dose-${prescription.id}`} className="text-[12px] text-[#00000099]">
             Dose
           </label>
           <input
-            type="number"
-            className="border-b border-[#0000006B] w-[119px] focus:outline-none"
+            id={`dose-${prescription.id}`}
+            type="text"
+            value={prescription.dose}
+            onChange={(e) => onUpdate("dose", e.target.value)}
+            className={`border-b ${
+              errors.dose ? "border-red-500" : "border-[#0000006B]"
+            } w-[119px] focus:outline-none`}
           />
           <span className="text-[#00000061] absolute right-0 text-[14px]">mg</span>
+          {errors.dose && (
+            <p className="text-red-500 text-xs mt-1">{errors.dose}</p>
+          )}
         </div>
 
         <div className="relative">
-          <label htmlFor="" className="text-[12px] text-[#00000099]">
+          <label htmlFor={`schedule-${prescription.id}`} className="text-[12px] text-[#00000099]">
             Schedule
           </label>
           <input
-            type="number"
-            className="border-b border-[#0000006B] w-[119px] focus:outline-none"
+            id={`schedule-${prescription.id}`}
+            type="text"
+            value={prescription.schedule}
+            onChange={(e) => onUpdate("schedule", e.target.value)}
+            className={`border-b ${
+              errors.schedule ? "border-red-500" : "border-[#0000006B]"
+            } w-[119px] focus:outline-none`}
           />
           <span className="text-[#00000061] absolute right-0 text-[14px]">times a day</span>
+          {errors.schedule && (
+            <p className="text-red-500 text-xs mt-1">{errors.schedule}</p>
+          )}
         </div>
 
-        <div
-          className="cursor-pointer"
-          onClick={() =>
-            onCountInput((input) => input.filter((item) => item.id !== id))
-          }
-        >
+        <div className="cursor-pointer" onClick={onRemove}>
           <svg
             width="14"
             height="14"
@@ -71,22 +91,29 @@ const InputPrescription: FC<InputPrescriptionProps> = ({
         <div className="flex items-center gap-2">
           <input
             type="radio"
-            name={beforeMeals}
-            id={afterMeals}
+            name={`consumption-${prescription.id}`}
+            id={`afterMeals-${prescription.id}`}
+            checked={prescription.consumptionTime === "afterMeals"}
+            onChange={() => onUpdate("consumptionTime", "afterMeals")}
             className="h-[18px] w-[18px]"
           />
-          <label htmlFor={afterMeals}>After meals</label>
+          <label htmlFor={`afterMeals-${prescription.id}`}>After meals</label>
         </div>
 
         <div className="flex items-center gap-2">
           <input
             type="radio"
-            name={beforeMeals}
-            id={beforeMeals}
+            name={`consumption-${prescription.id}`}
+            id={`beforeMeals-${prescription.id}`}
+            checked={prescription.consumptionTime === "beforeMeals"}
+            onChange={() => onUpdate("consumptionTime", "beforeMeals")}
             className="h-[18px] w-[18px]"
           />
-          <label htmlFor={beforeMeals}>Before meals</label>
+          <label htmlFor={`beforeMeals-${prescription.id}`}>Before meals</label>
         </div>
+        {errors.consumptionTime && (
+          <p className="text-red-500 text-xs">{errors.consumptionTime}</p>
+        )}
       </div>
     </section>
   );

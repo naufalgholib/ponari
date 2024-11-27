@@ -1,63 +1,221 @@
 "use client";
 
 import React, { FC, useState } from "react";
+import * as yup from "yup";
 
-// interface SignUpFormProps {
+interface FormData {
+  username: string;
+  nik: string;
+  email: string;
+  password: string;
+}
 
-// }
+const validationSchema = yup.object({
+  username: yup
+    .string()
+    .required("Username wajib diisi")
+    .min(5, "Username minimal 5 karakter")
+    .max(20, "Username maksimal 20 karakter")
+    .matches(/^[a-zA-Z0-9]+$/, "Username hanya boleh mengandung huruf dan angka")
+    .matches(/^\S*$/, "Username tidak boleh mengandung spasi"),
+  nik: yup
+    .string()
+    .required("NIK wajib diisi")
+    .matches(/^\d{16}$/, "NIK harus berupa 16 digit angka"),
+  email: yup
+    .string()
+    .required("Email wajib diisi")
+    .email("Format email tidak valid (contoh: nama@domain.com)"),
+  password: yup
+    .string()
+    .required("Password wajib diisi")
+    .min(8, "Password minimal 8 karakter")
+    .matches(
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
+      "Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial (!@#$%^&*)"
+    ),
+});
 
-const SignUpForm: FC = ({}) => {
+const SignUpForm: FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    username: "",
+    nik: "",
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // For NIK field, only allow numeric input
+    if (name === 'nik' && !/^\d*$/.test(value)) {
+      return;
+    }
+    
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error when typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+
+    // Validate single field on change
+    try {
+      await validationSchema.validateAt(name, { [name]: value });
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        setErrors((prev) => ({
+          ...prev,
+          [name]: error.message,
+        }));
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      await validationSchema.validate(formData, { abortEarly: false });
+      
+      // If validation passes
+      setSubmitStatus('success');
+      setFormData({
+        username: "",
+        nik: "",
+        email: "",
+        password: "",
+      });
+      setErrors({});
+      
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        const newErrors: { [key: string]: string } = {};
+        error.inner.forEach((err) => {
+          if (err.path) {
+            newErrors[err.path] = err.message;
+          }
+        });
+        setErrors(newErrors);
+        setSubmitStatus('error');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    // Clear status after 3 seconds
+    setTimeout(() => {
+      setSubmitStatus(null);
+    }, 3000);
+  };
+
   return (
     <section className="h-screen flex flex-col justify-center items-center">
-      <form className="h-[543px] w-[480px] space-y-6">
+      {submitStatus === 'success' && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg">
+          Pendaftaran berhasil!
+        </div>
+      )}
+      
+      {submitStatus === 'error' && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg">
+          Gagal mendaftar. Periksa kembali data Anda.
+        </div>
+      )}
+
+      <form className="h-[543px] w-[480px] space-y-6" onSubmit={handleSubmit}>
         <h1 className="font-bold text-[48px] text-center mb-4">Sign Up</h1>
+        
         <div>
-          <label htmlFor="" className="text-[16px]">
+          <label htmlFor="username" className="text-[16px] block">
             Username*
           </label>
           <input
             type="text"
-            className="border border-black w-full h-[48px] focus:outline-none p-2"
+            id="username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            maxLength={20}
+            className={`border ${
+              errors.username ? "border-red-500" : "border-black"
+            } w-full h-[48px] focus:outline-none p-2`}
           />
+          {errors.username && (
+            <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="" className="text-[16px]">
-            Nik*
+          <label htmlFor="nik" className="text-[16px] block">
+            NIK*
           </label>
           <input
-            type="number"
-            className="border border-black w-full h-[48px] focus:outline-none p-2"
+            type="text"
+            id="nik"
+            name="nik"
+            value={formData.nik}
+            onChange={handleChange}
+            maxLength={16}
+            className={`border ${
+              errors.nik ? "border-red-500" : "border-black"
+            } w-full h-[48px] focus:outline-none p-2`}
           />
+          {errors.nik && (
+            <p className="text-red-500 text-sm mt-1">{errors.nik}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="" className="text-[16px]">
+          <label htmlFor="email" className="text-[16px] block">
             Email*
           </label>
           <input
             type="email"
-            className="border border-black w-full h-[48px] focus:outline-none p-2"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className={`border ${
+              errors.email ? "border-red-500" : "border-black"
+            } w-full h-[48px] focus:outline-none p-2`}
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          )}
         </div>
 
-        <div className="">
-          <label htmlFor="" className="text-[16px]">
+        <div>
+          <label htmlFor="password" className="text-[16px] block">
             Password*
           </label>
-
           <div className="relative">
             <input
-              type={`${showPassword ? "text" : "password"}`}
-              className="border border-black w-full h-[48px] focus:outline-none p-2"
-              placeholder=""
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`border ${
+                errors.password ? "border-red-500" : "border-black"
+              } w-full h-[48px] focus:outline-none p-2`}
             />
-            {showPassword ? (
-              <div
-                className="cursor-pointer absolute top-4 right-3"
-                onClick={() => setShowPassword((toggle) => !toggle)}
-              >
+            <div
+              className="cursor-pointer absolute top-3 right-3"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
                 <svg
                   width="22"
                   height="25"
@@ -80,12 +238,7 @@ const SignUpForm: FC = ({}) => {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </div>
-            ) : (
-              <div
-                className="cursor-pointer absolute top-3 right-3"
-                onClick={() => setShowPassword((toggle) => !toggle)}
-              >
+              ) : (
                 <svg
                   width="22"
                   height="25"
@@ -122,13 +275,22 @@ const SignUpForm: FC = ({}) => {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+          )}
         </div>
 
-        <button className="w-full h-[48px] bg-black text-white hover:bg-opacity-80 transition-all">
-          Sign Up
+        <button 
+          type="submit"
+          disabled={isSubmitting}
+          className={`w-full h-[48px] bg-black text-white hover:bg-opacity-80 transition-all ${
+            isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+          }`}
+        >
+          {isSubmitting ? 'Mendaftar...' : 'Sign Up'}
         </button>
       </form>
     </section>

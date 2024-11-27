@@ -11,7 +11,7 @@ const HomepageDashboard: FC = () => {
           Ponari - Receptionist Dashboard
         </h2>
         <Link
-          href="/dashboard-as-receptionist/register-new-appointment"
+          href="/dashboard-as-receptionist/register-new-patient"
           className="w-[401px] h-[86px] rounded-[20px] text-white bg-black flex justify-center items-center text-[30px]"
         >
           Register New Patient
@@ -70,7 +70,7 @@ const HomepageDashboard: FC = () => {
         <div className="w-[1312px] mt-4">
           <div className="flex items-center gap-9">
             <Link
-              href="/dashboard-as-receptionist/schedule-appointment"
+              href="/dashboard-as-receptionist/register-new-appointment"
               className="flex justify-center items-center w-[532px] h-[84px] border border-[#b3b3b1] rounded-[20px] text-[32px] bg-white"
             >
               Schedule Appointment

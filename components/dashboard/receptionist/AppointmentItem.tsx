@@ -1,3 +1,4 @@
+import Badge from "@/components/Badge";
 import React, { FC } from "react";
 
 type AppointmentItemProps = {
@@ -32,13 +33,10 @@ const AppointmentItem: FC<AppointmentItemProps> = ({ status }) => {
         </div>
 
         <div>
-          <span
-            className={`flex justify-center items-center w-[130px] h-[40px] ${
-              status === "waiting" ? "bg-[#FFFDBE]" : "bg-[#d1ffe4]"
-            } rounded-[20px]`}
-          >
-            {status}
-          </span>
+          <Badge
+            color={status === "waiting" ? "warning" : "success"}
+            title={status}
+          />
           <p className="text-[28px] font-bold">dr. Adam H.</p>
         </div>
       </div>

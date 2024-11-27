@@ -1,3 +1,4 @@
+// PrescriptionForm.tsx
 "use client";
 
 import React, { FC, useState } from "react";
@@ -5,27 +6,120 @@ import InputPrescription from "./InputPrescription";
 import Each from "@/utils/Each";
 import ButtonSaveForm from "../ButtonSaveForm";
 import Overlay from "@/components/Overlay";
+import * as yup from "yup";
 
 type PrescriptionFormProps = {
   onSelectedForm: React.Dispatch<React.SetStateAction<number>>;
 };
 
-const input = [
-  {
-    id: Date.now(),
-    name: ["beforeMeals", "afterMeals"],
-  },
-];
-
-export type inputType = {
+export type PrescriptionInput = {
   id: number;
-  name: string[];
+  medicine: string;
+  dose: string;
+  schedule: string;
+  consumptionTime: "" | "beforeMeals" | "afterMeals";
+};
+
+export const prescriptionSchema = yup.object().shape({
+  medicine: yup
+    .string()
+    .required("Medicine name is required")
+    .min(2, "Medicine name must be at least 2 characters")
+    .max(50, "Medicine name must be at most 50 characters")
+    .matches(/^[a-zA-Z0-9 ]+$/, "Only letters, numbers and spaces are allowed"),
+  dose: yup
+    .string()
+    .required("Dose is required")
+    .matches(/^\d{1,4}$/, "Dose must be between 1-4 digits"),
+  schedule: yup
+    .string()
+    .required("Schedule is required")
+    .matches(/^\d{1}$/, "Schedule must be exactly 1 digit"),
+  consumptionTime: yup
+    .string()
+    .required("Consumption time is required")
+    .oneOf(["", "beforeMeals", "afterMeals"], "Please select consumption time")
+});
+
+const initialInput = {
+  id: Date.now(),
+  medicine: "",
+  dose: "",
+  schedule: "",
+  consumptionTime: "" as "" | "beforeMeals" | "afterMeals"
 };
 
 const PrescriptionForm: FC<PrescriptionFormProps> = ({ onSelectedForm }) => {
-  const [countInput, setCountInput] = useState<inputType[]>(input);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionInput[]>([initialInput]);
+  const [errors, setErrors] = useState<{ [key: string]: { [key: string]: string } }>({});
 
-  console.log(countInput);
+  const validateField = async (id: number, field: string, value: string) => {
+    try {
+      await prescriptionSchema.validateAt(field, { [field]: value });
+      setErrors(prev => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          [field]: ""
+        }
+      }));
+      return true;
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        setErrors(prev => ({
+          ...prev,
+          [id]: {
+            ...prev[id],
+            [field]: error.message
+          }
+        }));
+      }
+      return false;
+    }
+  };
+
+  const handleAddPrescription = () => {
+    setPrescriptions(prev => [...prev, { ...initialInput, id: Date.now() }]);
+  };
+
+  const handleRemovePrescription = (id: number) => {
+    setPrescriptions(prev => prev.filter(item => item.id !== id));
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[id];
+      return newErrors;
+    });
+  };
+
+  const handleSave = async () => {
+    let isValid = true;
+    const newErrors: { [key: string]: { [key: string]: string } } = {};
+
+    for (const prescription of prescriptions) {
+      try {
+        await prescriptionSchema.validate(prescription, { abortEarly: false });
+      } catch (error) {
+        isValid = false;
+        if (error instanceof yup.ValidationError) {
+          newErrors[prescription.id] = error.inner.reduce(
+            (acc, curr) => ({
+              ...acc,
+              [curr.path!]: curr.message
+            }),
+            {}
+          );
+        }
+      }
+    }
+
+    setErrors(newErrors);
+    
+    if (isValid) {
+      // Handle successful validation
+      console.log("Valid prescriptions:", prescriptions);
+    }
+  };
+
   return (
     <Overlay>
       <div className="relative h-[629px] w-[570px] bg-white rounded-[20px] p-10 overflow-y-scroll">
@@ -47,37 +141,33 @@ const PrescriptionForm: FC<PrescriptionFormProps> = ({ onSelectedForm }) => {
           </svg>
         </div>
 
-        <h2 className="text-center mt-2 mb-10 text-[32px]">
-          Prescription Form
-        </h2>
+        <h2 className="text-center mt-2 mb-10 text-[32px]">Prescription Form</h2>
 
-        <div className="">
+        <div>
           <Each
-            of={countInput}
-            render={(input) => (
+            of={prescriptions}
+            render={(prescription) => (
               <InputPrescription
-                key={input.id}
-                id={input.id}
-                beforeMeals={input.name[0]}
-                afterMeals={input.name[1]}
-                onCountInput={setCountInput}
+                key={prescription.id}
+                prescription={prescription}
+                errors={errors[prescription.id] || {}}
+                onUpdate={(field, value) => {
+                  setPrescriptions(prev =>
+                    prev.map(p =>
+                      p.id === prescription.id
+                        ? { ...p, [field]: value }
+                        : p
+                    )
+                  );
+                  validateField(prescription.id, field, value);
+                }}
+                onRemove={() => handleRemovePrescription(prescription.id)}
               />
             )}
           />
 
           <button
-            onClick={() =>
-              setCountInput((count) => [
-                ...count,
-                {
-                  id: Date.now(),
-                  name: [
-                    `beforeMeals${count.length}`,
-                    `afterMeals${count.length}`,
-                  ],
-                },
-              ])
-            }
+            onClick={handleAddPrescription}
             className="mt-8 w-[101px] h-[42px] rounded-[4px] flex items-center justify-center gap-1 bg-[#F5F5F5] border border-[#878787] hover:bg-[#f5f5f57a]"
           >
             <svg
@@ -98,7 +188,7 @@ const PrescriptionForm: FC<PrescriptionFormProps> = ({ onSelectedForm }) => {
             ADD
           </button>
 
-          <ButtonSaveForm />
+          <ButtonSaveForm onClick={handleSave} />
         </div>
       </div>
     </Overlay>

@@ -1,3 +1,4 @@
+import Back from "@/components/Back";
 import React, { FC } from "react";
 
 const RegisterAppointmentForm: FC = () => {
@@ -20,7 +21,9 @@ const RegisterAppointmentForm: FC = () => {
         <h2 className="text-[36px] font-bold">Schedule New Appointment</h2>
       </div>
 
-      <div>
+      <Back href="/dashboard-as-receptionist" />
+
+      <div className="mt-4">
         <h2 className="text-[32px] font-bold">Patient Nama</h2>
         <input
           type="text"
@@ -43,12 +46,16 @@ const RegisterAppointmentForm: FC = () => {
         <select
           name="cars"
           id="cars"
-          className="border-[#b3b3b1] border-[2px] rounded-[20px] w-[1313px] h-[91px] focus:text-[32px] text-[32px] px-4 focus:outline-none"
+          className="border-[#b3b3b1] border-[2px] rounded-[20px] w-[1313px] h-[91px] focus:text-[32px] text-[32px] px-4 focus:outline-none cursor-pointer"
+          defaultValue="select_doctor"
         >
-          <option value="volvo">Volvo</option>
-          <option value="saab">Saab</option>
-          <option value="mercedes">Mercedes</option>
-          <option value="audi">Audi</option>
+          <option value="select_doctor" disabled>
+            Select a doctor
+          </option>
+          <option value="volvo">Doctor 1</option>
+          <option value="saab">Doctor 2</option>
+          <option value="mercedes">Doctor 3</option>
+          <option value="audi">Doctor 4</option>
         </select>
       </div>
 
@@ -69,12 +76,16 @@ const RegisterAppointmentForm: FC = () => {
           <select
             name="cars"
             id="cars"
-            className="border-[#b3b3b1] border-[2px] rounded-[20px] w-[643px] h-[91px] focus:text-[32px] text-[32px] px-4 focus:outline-none"
+            className="border-[#b3b3b1] border-[2px] rounded-[20px] w-[643px] h-[91px] focus:text-[32px] text-[32px] px-4 focus:outline-none cursor-pointer"
+            defaultValue="select_time"
           >
-            <option value="volvo">Volvo</option>
-            <option value="saab">Saab</option>
-            <option value="mercedes">Mercedes</option>
-            <option value="audi">Audi</option>
+            <option value="select_time" disabled>
+              Select time slot
+            </option>
+            <option value="volvo">Time 1</option>
+            <option value="saab">Time 2</option>
+            <option value="mercedes">Time 3</option>
+            <option value="audi">Time 4</option>
           </select>
         </div>
       </div>
@@ -90,7 +101,7 @@ const RegisterAppointmentForm: FC = () => {
       </div>
 
       <div className="flex justify-center items-center mt-8">
-        <button className="bg-black w-[480px] h-[80px] text-white rounded-[20px]">
+        <button className="bg-black w-[480px] h-[80px] text-white rounded-[20px] text-[32px]">
           Save
         </button>
       </div>
