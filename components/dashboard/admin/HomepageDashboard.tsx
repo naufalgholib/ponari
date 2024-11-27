@@ -1,6 +1,6 @@
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Users, UserPlus, Settings, Activity, Search } from 'lucide-react';
+import { Users, UserPlus, Activity, Search } from 'lucide-react';
 import Link from "next/link";
 
 const HomepageDashboard: FC = ({ }) => {
