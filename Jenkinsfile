@@ -1,18 +1,18 @@
 pipeline {
     agent any
     tools {
-        nodejs "NodeJS 22.10.0"  
+        nodejs "node-22-lts"  
     }
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('746a9d6f-7d6b-48fe-8d3c-9c03c59d8149')
-        GITHUB_CREDENTIALS = credentials('5eb92f59-8b32-482c-a9b9-d5676b693029')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-jenkins')
+        GITHUB_CREDENTIALS = credentials('github-jenkins')
         DOCKER_IMAGE = "naufalgholib/ponari-fe"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: '5eb92f59-8b32-482c-a9b9-d5676b693029', url: 'https://github.com/naufalgholib/ponari.git'
+                git branch: 'main', credentialsId: 'github-jenkins', url: 'https://github.com/naufalgholib/ponari.git'
             }
         }
 
@@ -45,7 +45,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', '746a9d6f-7d6b-48fe-8d3c-9c03c59d8149') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-jenkins') {
                         docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}").push()
                         docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}").push("latest")
                     }
