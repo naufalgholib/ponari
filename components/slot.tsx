@@ -1,20 +1,17 @@
 import * as React from "react";
 
 export interface SlotProps extends React.HTMLAttributes<HTMLElement> {
-  children?: React.ReactNode;
+  children?: React.ReactElement;
 }
 
 type ElementRef = HTMLElement | null;
 
 export const Slot = React.forwardRef<ElementRef, SlotProps>(
   ({ children, ...props }, forwardedRef) => {
-    const child = children
-      ? (React.Children.only(children) as React.ReactElement)
-      : null;
+    const child = children ? React.Children.only(children) : null;
+
     const ref = useMergeRefs<ElementRef>(
-      child
-        ? [forwardedRef, child.ref as React.Ref<ElementRef>]
-        : [forwardedRef]
+      child ? [forwardedRef, (child as any).ref] : [forwardedRef]
     );
 
     if (!child) {
@@ -31,15 +28,9 @@ export const Slot = React.forwardRef<ElementRef, SlotProps>(
 Slot.displayName = "Slot";
 
 // Improved type safety for ref merging
-type PossibleRef<T> =
-  | React.RefCallback<T>
-  | React.MutableRefObject<T>
-  | null
-  | undefined;
+type PossibleRef<T> = React.RefCallback<T> | React.MutableRefObject<T> | null | undefined;
 
-function useMergeRefs<T extends ElementRef>(
-  refs: Array<PossibleRef<T>>
-): React.RefCallback<T> {
+function useMergeRefs<T extends ElementRef>(refs: PossibleRef<T>[]): React.RefCallback<T> {
   return React.useCallback(
     (value: T) => {
       refs.forEach((ref) => {
@@ -50,12 +41,12 @@ function useMergeRefs<T extends ElementRef>(
         }
       });
     },
-    [...refs]
-  ); // Spread refs to include each as a dependency
+    [refs]
+  );
 }
 
 // Improved type safety for props merging
-type Props = Record<string, unknown>;
+type Props = Record<string, any>;
 
 function mergeProps(childProps: Props, slotProps: Props): Props {
   const merged = { ...childProps, ...slotProps };
@@ -68,17 +59,14 @@ function mergeProps(childProps: Props, slotProps: Props): Props {
       typeof childProps[propName] === "function"
     ) {
       merged[propName] = (...args: unknown[]) => {
-        (childProps[propName] as (...args: unknown[]) => void)?.(...args);
-        (slotProps[propName] as (...args: unknown[]) => void)?.(...args);
+        childProps[propName](...args);
+        slotProps[propName](...args);
       };
     }
   });
 
   // Special handling for className
-  if (
-    typeof childProps.className === "string" &&
-    typeof slotProps.className === "string"
-  ) {
+  if (typeof childProps.className === "string" && typeof slotProps.className === "string") {
     merged.className = `${childProps.className} ${slotProps.className}`.trim();
   }
 
