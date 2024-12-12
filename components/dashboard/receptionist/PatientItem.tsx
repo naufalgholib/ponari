@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import Link from "next/link";
 
 type PatientItemProps = {
   name: string;
@@ -79,15 +80,19 @@ const PatientItem: FC<PatientItemProps> = ({
       </div>
 
       <div className="flex justify-end items-center gap-4">
-        <button className="text-[28px] font-bold h-[59px] w-[186px] rounded-[20px] border border-[#b3b3b1]">
-          View History
+        <button className="text-[28px] font-bold h-[59px] w-[300px] rounded-[20px] border border-[#b3b3b1]">
+          <Link href="/dashboard-as-receptionist/patient-directory/patient-history">
+            Riwayat Kunjungan
+          </Link>
         </button>
         <button className="text-[28px] font-bold h-[59px] w-[330px] rounded-[20px] border border-[#b3b3b1]">
-          Schedule Appointment
+          <Link href="/dashboard-as-receptionist/patient-directory/confirm-appointment">
+            Konfirmasi Kedatangan
+          </Link>
         </button>
-        <button className="text-[28px] text-white bg-black font-bold h-[59px] w-[195px] rounded-[20px] border border-[#b3b3b1]">
+        {/* <button className="text-[28px] text-white bg-black font-bold h-[59px] w-[195px] rounded-[20px] border border-[#b3b3b1]">
           Edit Details
-        </button>
+        </button> */}
       </div>
     </div>
   );
