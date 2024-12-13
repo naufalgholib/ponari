@@ -37,13 +37,15 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'mkdir -p certs'
+                sh '''
+                    mkdir -p certs
+                    chmod 755 certs  
+                '''
                 
                 withCredentials([certificate(credentialsId: 'ssl-website', keystoreVariable: 'CERT_FILE')]) {
                     sh '''
                         set -x  # Enable debug mode
                         cp $CERT_FILE certs/fullchain.pem
-                        # Ekstrak private key dari credential
                         openssl pkey -in $CERT_FILE -out certs/privkey.pem
                         ls -la certs/  # Verify files
                     '''
@@ -57,7 +59,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Push Docker Image') {
             steps {
                 script {
