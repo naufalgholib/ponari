@@ -38,19 +38,18 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    whoami  # Cek user yang menjalankan pipeline
-                    ls -la  # Cek current directory permissions
-                    sudo mkdir -p certs || mkdir -p certs
-                    sudo chown -R jenkins:jenkins certs || chown -R $(whoami):$(whoami) certs
-                    sudo chmod -R 755 certs
+                    whoami
+                    ls -la
+                    mkdir -p certs
+                    chmod -R 755 certs
                 '''
                 
                 withCredentials([certificate(credentialsId: 'ssl-website', keystoreVariable: 'CERT_FILE')]) {
                     sh '''
-                        set -x  # Enable debug mode
-                        sudo cp $CERT_FILE certs/fullchain.pem || cp $CERT_FILE certs/fullchain.pem
-                        sudo openssl pkey -in $CERT_FILE -out certs/privkey.pem || openssl pkey -in $CERT_FILE -out certs/privkey.pem
-                        ls -la certs/  # Verify files
+                        set -x
+                        cp $CERT_FILE certs/fullchain.pem
+                        openssl pkey -in $CERT_FILE -out certs/privkey.pem
+                        ls -la certs/
                     '''
                 }
                 
@@ -62,7 +61,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Push Docker Image') {
             steps {
                 script {
