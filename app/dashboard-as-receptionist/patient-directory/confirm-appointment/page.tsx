@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from 'next/navigation';
 import ConfirmAppointment from "@/components/dashboard/receptionist/ConfirmAppointment";
 
 const App = () => {
@@ -12,8 +13,10 @@ const App = () => {
     address: "Jl. Lima",
   };
 
+  const router = useRouter();
   // Fungsi untuk menangani tombol kembali
   const handleBack = () => {
+    router.push('/dashboard-as-receptionist');
     console.log("Kembali ditekan");
   };
 
