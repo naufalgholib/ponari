@@ -52,12 +52,11 @@ pipeline {
                         ls -la certs/
                     '''
                 }
-                
+
                 script {
-                    def buildArgs = "--no-cache ."
+                    def buildArgs = "--no-cache --network=host ."
                     echo "Building docker image with args: ${buildArgs}"
                     def image = docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}", buildArgs)
-                    echo "Docker image built successfully: ${image.id}"
                 }
             }
         }
