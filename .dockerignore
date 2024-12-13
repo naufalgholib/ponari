@@ -22,3 +22,7 @@
 **/values.dev.yaml
 LICENSE
 README.md
+.git
+.gitignore
+node_modules
+.next

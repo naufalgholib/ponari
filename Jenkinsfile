@@ -37,14 +37,22 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                withCredentials([file(credentialsId: 'ssl-website', variable: 'SSL_CERT')]) {
-                    sh 'cp $SSL_CERT certs/fullchain.pem'
+                sh 'mkdir -p certs'
+                
+                withCredentials([certificate(credentialsId: 'ssl-website', keystoreVariable: 'CERT_FILE')]) {
+                    sh '''
+                        set -x  # Enable debug mode
+                        cp $CERT_FILE certs/fullchain.pem
+                        openssl pkcs12 -in $CERT_FILE -nocerts -nodes -out certs/privkey.pem
+                        ls -la certs/  # Verify files
+                    '''
                 }
-                withCredentials([file(credentialsId: 'ssl-website', variable: 'SSL_KEY')]) {
-                    sh 'cp $SSL_KEY certs/privkey.pem'
-                }
+                
                 script {
-                    docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}")
+                    def buildArgs = "--no-cache ."
+                    echo "Building docker image with args: ${buildArgs}"
+                    def image = docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}", buildArgs)
+                    echo "Docker image built successfully: ${image.id}"
                 }
             }
         }

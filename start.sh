@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Jalankan aplikasi Node.js di latar belakang
-npm start &
+# Start Nginx
+nginx
 
-# Jalankan Nginx di foreground
-nginx -g "daemon off;"
+# Start Node.js application
+npm start

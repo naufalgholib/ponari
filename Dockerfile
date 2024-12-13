@@ -8,8 +8,11 @@ RUN npm run build
 
 # Production stage
 FROM node:22.10.0-alpine3.20
-RUN apk add --no-cache nginx
+RUN apk add --no-cache nginx openssl
+
+# Buat direktori yang diperlukan
 WORKDIR /app
+RUN mkdir -p /etc/nginx/certs
 
 # Copy aplikasi Node.js
 COPY --from=build /app/next.config.ts ./
@@ -22,13 +25,16 @@ COPY --from=build /app/package.json ./package.json
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Copy sertifikat SSL
-COPY certs/fullchain.pem /etc/nginx/certs/fullchain.pem
-COPY certs/privkey.pem /etc/nginx/certs/privkey.pem
+COPY certs/fullchain.pem /etc/nginx/certs/
+COPY certs/privkey.pem /etc/nginx/certs/
 
-# Expose port 443 untuk HTTPS
-EXPOSE 443
+# Set permissions
+RUN chmod 600 /etc/nginx/certs/*
 
-# Jalankan Nginx dan aplikasi Node.js secara bersamaan menggunakan shell script
+# Expose ports
+EXPOSE 80 443
+
+# Copy dan set executable permission untuk start script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
