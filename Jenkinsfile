@@ -43,7 +43,8 @@ pipeline {
                     sh '''
                         set -x  # Enable debug mode
                         cp $CERT_FILE certs/fullchain.pem
-                        openssl pkcs12 -in $CERT_FILE -nocerts -nodes -out certs/privkey.pem
+                        # Ekstrak private key dari credential
+                        openssl pkey -in $CERT_FILE -out certs/privkey.pem
                         ls -la certs/  # Verify files
                     '''
                 }
