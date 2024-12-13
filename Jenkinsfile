@@ -1,18 +1,18 @@
 pipeline {
     agent any
     tools {
-        nodejs "node-22-lts"  
+        nodejs "NodeJS 22.10.0"  
     }
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-jenkins')
-        GITHUB_CREDENTIALS = credentials('github-jenkins')
+        DOCKERHUB_CREDENTIALS = credentials('746a9d6f-7d6b-48fe-8d3c-9c03c59d8149')
+        GITHUB_CREDENTIALS = credentials('5eb92f59-8b32-482c-a9b9-d5676b693029')
         DOCKER_IMAGE = "naufalgholib/ponari-fe"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'github-jenkins', url: 'https://github.com/naufalgholib/ponari.git'
+                git branch: 'main', credentialsId: '5eb92f59-8b32-482c-a9b9-d5676b693029', url: 'https://github.com/naufalgholib/ponari.git'
             }
         }
 
@@ -32,31 +32,12 @@ pipeline {
             steps {
                 sh 'npm run build'
             }
-
         }
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    whoami
-                    ls -la
-                    mkdir -p certs
-                    chmod -R 755 certs
-                '''
-                
-                withCredentials([certificate(credentialsId: 'ssl-website', keystoreVariable: 'CERT_FILE')]) {
-                    sh '''
-                        set -x
-                        cp $CERT_FILE certs/fullchain.pem
-                        openssl pkey -in $CERT_FILE -out certs/privkey.pem
-                        ls -la certs/
-                    '''
-                }
-
                 script {
-                    def buildArgs = "--no-cache --network=host ."
-                    echo "Building docker image with args: ${buildArgs}"
-                    def image = docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}", buildArgs)
+                    docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}")
                 }
             }
         }
@@ -64,31 +45,26 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-jenkins') {
+                    docker.withRegistry('https://index.docker.io/v1/', '746a9d6f-7d6b-48fe-8d3c-9c03c59d8149') {
                         docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}").push()
                         docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}").push("latest")
                     }
                 }
             }
         }
-        
+
         stage('Deploy') {
             steps {
                 sh "docker stop ponari-frontend || true"
                 sh "docker rm ponari-frontend || true"
-                sh """
-                    docker run -d --name ponari-frontend \
-                        -p 80:80 \
-                        -p 443:443 \
-                        ${DOCKER_IMAGE}:${BUILD_NUMBER}
-                """
+                sh "docker run -d --name ponari-frontend -p 80:3000 ${DOCKER_IMAGE}:${BUILD_NUMBER}"
                 sh "sleep 10"
             }
         }
 
         stage('Test Access') {
             steps {
-                sh "curl -Ik https://localhost -m 10"
+                sh "curl -I -s localhost:80"
             }
         }
     }
