@@ -32,16 +32,23 @@ pipeline {
             steps {
                 sh 'npm run build'
             }
+
         }
 
         stage('Build Docker Image') {
             steps {
+                withCredentials([file(credentialsId: 'ssl-website', variable: 'SSL_CERT')]) {
+                    sh 'cp $SSL_CERT certs/fullchain.pem'
+                }
+                withCredentials([file(credentialsId: 'ssl-website', variable: 'SSL_KEY')]) {
+                    sh 'cp $SSL_KEY certs/privkey.pem'
+                }
                 script {
                     docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}")
                 }
             }
         }
-
+        
         stage('Push Docker Image') {
             steps {
                 script {
@@ -52,19 +59,24 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Deploy') {
             steps {
                 sh "docker stop ponari-frontend || true"
                 sh "docker rm ponari-frontend || true"
-                sh "docker run -d --name ponari-frontend -p 80:3000 ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                sh """
+                    docker run -d --name ponari-frontend \
+                        -p 80:80 \
+                        -p 443:443 \
+                        ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                """
                 sh "sleep 10"
             }
         }
 
         stage('Test Access') {
             steps {
-                sh "curl -I -s localhost:80"
+                sh "curl -Ik https://localhost -m 10"
             }
         }
     }
